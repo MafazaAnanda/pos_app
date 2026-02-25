@@ -3,6 +3,9 @@ import 'package:pos_app/database/product_dao.dart';
 import 'package:pos_app/formatter/currency_formatter.dart';
 import 'package:pos_app/models/product.dart';
 import 'package:pos_app/widgets/app_drawer.dart';
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 
 class ProductList extends StatefulWidget {
   const ProductList({super.key});
@@ -12,6 +15,52 @@ class ProductList extends StatefulWidget {
 }
 
 class _ProductListState extends State<ProductList> {
+  Widget _buildProductImage(Product product) {
+    const size = 56.0;
+    const radius = 8.0;
+
+    if (kIsWeb) {
+      final bytes = product.imageBytes;
+      if (bytes != null && bytes.isNotEmpty) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(radius),
+          child: Image.memory(
+            Uint8List.fromList(bytes),
+            width: size, height: size,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _imagePlaceholder(size, radius),
+          ),
+        );
+      }
+      return _imagePlaceholder(size, radius);
+    }
+
+    final path = product.imagePath;
+    if (path != null && path.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: Image.file(
+          File(path),
+          width: size, height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _imagePlaceholder(size, radius),
+        ),
+      );
+    }
+    return _imagePlaceholder(size, radius);
+  }
+
+  Widget _imagePlaceholder(double size, double radius) {
+    return Container(
+      width: size, height: size,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(radius),
+      ),
+      child: const Icon(Icons.fastfood, color: Colors.grey),
+    );
+  }
+
   final ProductDao _productDao = ProductDao();
   List<Product> _products = [];
 
@@ -56,9 +105,7 @@ class _ProductListState extends State<ProductList> {
                   vertical: 7,
                 ),
                 child: ListTile(
-                  leading: product.isFavorite == 1
-                      ? const Icon(Icons.favorite, color: Colors.red)
-                      : const Icon(Icons.favorite_border),
+                  leading: _buildProductImage(product),
                   title: Text(product.name),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

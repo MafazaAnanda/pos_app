@@ -429,7 +429,8 @@ class _ProductFormState extends State<ProductForm> {
                           isFavorite: _isFavorite ? 1 : 0,
                           isActive: 1,
                           description: _description,
-                          imagePath: _imagePath, 
+                          imagePath: _imagePath,
+                          imageBytes: _imageBytes?.toList(),
                           createdAt: DateTime.now().toIso8601String(),
                         );
 

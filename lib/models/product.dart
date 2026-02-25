@@ -4,6 +4,7 @@ class Product {
   final double sellPrice, costPrice, discountPercent;
   final int stock, minStock, isActive, isFavorite;
   final String? imagePath, createdAt, updatedAt;
+  final List<int>? imageBytes;
 
   Product({
     this.id,
@@ -18,6 +19,7 @@ class Product {
     this.isFavorite = 1,
     this.description = '',
     this.imagePath,
+    this.imageBytes,
     this.createdAt,
     this.updatedAt,
   });
@@ -36,6 +38,9 @@ class Product {
       isFavorite: map['is_favorite'] as int,
       description: map['description'] as String,
       imagePath: map['image_path'] as String?,
+      imageBytes: map['image_bytes'] != null
+          ? List<int>.from(map['image_bytes'] as List)
+          : null,
       createdAt: map['created_at'] as String?,
       updatedAt: map['updated_at'] as String?,
     );
@@ -55,6 +60,7 @@ class Product {
       'is_favorite': isFavorite,
       'description': description,
       'image_path': imagePath,
+      if (imageBytes != null) 'image_bytes': imageBytes,
       'created_at': createdAt,
       'updated_at': updatedAt,
     };
@@ -73,6 +79,7 @@ class Product {
     int? isFavorite,
     String? description,
     String? imagePath,
+    List<int>? imageBytes,
     String? createdAt,
     String? updatedAt,
   }) {
@@ -89,6 +96,7 @@ class Product {
       isFavorite: isFavorite ?? this.isFavorite,
       description: description ?? this.description,
       imagePath: imagePath ?? this.imagePath,
+      imageBytes: imageBytes ?? this.imageBytes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

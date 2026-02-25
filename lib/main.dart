@@ -60,7 +60,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const ProductList(),
         '/menu': (context) => const ProductList(),
-        '/product_form': (context) => const ProductForm(),
+        'product_form': (context) => const ProductForm(),
       },
     );
   }
