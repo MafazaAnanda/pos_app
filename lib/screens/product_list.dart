@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pos_app/database/product_dao.dart';
 import 'package:pos_app/formatter/currency_formatter.dart';
 import 'package:pos_app/models/product.dart';
+import 'package:pos_app/screens/product_details.dart';
 import 'package:pos_app/widgets/app_drawer.dart';
 import 'dart:io';
 import 'dart:typed_data';
@@ -104,7 +105,16 @@ class _ProductListState extends State<ProductList> {
                   horizontal: 14,
                   vertical: 7,
                 ),
+                
                 child: ListTile(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProductDetails(product: product),
+                      ),
+                    );
+                  },
                   leading: _buildProductImage(product),
                   title: Text(product.name),
                   subtitle: Column(
@@ -123,6 +133,7 @@ class _ProductListState extends State<ProductList> {
                         ),
                     ],
                   ),
+
                   trailing: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.end,
