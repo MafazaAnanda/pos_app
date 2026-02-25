@@ -1,113 +1,97 @@
-import 'package:sqflite/sqflite.dart';
 import 'package:pos_app/database/database_service.dart';
 import 'package:pos_app/models/product.dart';
 
 class ProductDao {
-  final DatabaseService _databaseService = DatabaseService.instance;
+  final DatabaseService _db = DatabaseService.instance;
 
   Future<int> createProduct(Product product) async {
-    final db = await _databaseService.database;
+    final box = _db.productsBox;
     final timeNow = DateTime.now().toIso8601String();
-
     final map = product.toMap();
     map['created_at'] = timeNow;
     map['updated_at'] = timeNow;
 
-    return await db.insert('products', map);
+    final key = await box.add(map);
+    map['id'] = key;
+    await box.put(key, map);
+    return key;
   }
 
   Future<List<Product>> getAllProducts() async {
-    final db = await _databaseService.database;
-    final data = await db.query(
-      'products',
-      orderBy: 'created_at DESC',
-    );
-
-    return data.map((map) => Product.fromMap(map)).toList();
+    final box = _db.productsBox;
+    return box.keys.map((key) {
+      final map = Map<String, dynamic>.from(box.get(key) as Map);
+      map['id'] = key;
+      return Product.fromMap(map);
+    }).toList()
+      ..sort((a, b) {
+        final aDate = a.createdAt ?? '';
+        final bDate = b.createdAt ?? '';
+        return bDate.compareTo(aDate); 
+      });
   }
 
   Future<List<Product>> getActiveProducts() async {
-    final db = await _databaseService.database;
-    final data = await db.query(
-      'products',
-      where: 'is_active = ? AND stock > ?',
-      whereArgs: [1, 0],
-      orderBy: 'name ASC',
-    );
-
-    return data.map((map) => Product.fromMap(map)).toList();
+    final all = await getAllProducts();
+    return all
+        .where((p) => p.isActive == 1 && p.stock > 0)
+        .toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
   }
 
   Future<Product?> getProductById(int id) async {
-    final db = await _databaseService.database;
-    final data = await db.query(
-      'products',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    final box = _db.productsBox;
+    final raw = box.get(id);
+    if (raw == null) {
+      return null;
+    }
 
-    return data.isNotEmpty ? Product.fromMap(data.first): null;
+    final map = Map<String, dynamic>.from(raw as Map);
+    map['id'] = id;
+    return Product.fromMap(map);
   }
 
   Future<List<Product>> getProductByName(String name) async {
-    final db = await _databaseService.database;
-    final data = await db.query(
-      'products',
-      where: 'name LIKE  ?',
-      whereArgs: ['%$name%'],
-      orderBy: 'name ASC',
-    );
-
-    return data.map((map) => Product.fromMap(map)).toList(); 
+    final all = await getAllProducts();
+    return all
+        .where((p) => p.name.toLowerCase().contains(name.toLowerCase()))
+        .toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
   }
 
   Future<List<Product>> getLowStockProducts() async {
-    final db = await _databaseService.database;
-    final data = await db.rawQuery(
-      'SELECT * FROM products WHERE stock <= min_stock AND is_active = 1 ORDER BY stock ASC',
-    ); 
-
-    return data.map((map) => Product.fromMap(map)).toList(); 
+    final all = await getAllProducts();
+    return all
+        .where((p) => p.stock <= p.minStock && p.isActive == 1)
+        .toList()
+      ..sort((a, b) => a.stock.compareTo(b.stock));
   }
 
   Future<int> updateProduct(int id, Product product) async {
-    final db = await _databaseService.database;
-
+    final box = _db.productsBox;
     final map = product.toMap();
+    map['id'] = id;
     map['updated_at'] = DateTime.now().toIso8601String();
-    
-    return await db.update(
-      'products',
-      map,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await box.put(id, map);
+    return 1;
   }
 
   Future<int> reduceStock(int id, int quantity) async {
-    final db = await _databaseService.database;
-
-    return await db.rawUpdate(
-      'UPDATE products SET stock = stock - ?, updated_at = ? WHERE id = ? AND stock >= ?',
-      [quantity, DateTime.now().toIso8601String(), id, 0],
-    );
+    final product = await getProductById(id);
+    if (product == null || product.stock < quantity) {
+      return 0;
+    }
+    
+    final updated = product.copyWith(stock: product.stock - quantity);
+    return updateProduct(id, updated);
   }
 
   Future<int> getProductCount() async {
-    final db = await _databaseService.database;
-    final data = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM products'
-    );
-    return Sqflite.firstIntValue(data) ?? 0;
+    return _db.productsBox.length;
   }
 
   Future<int> deleteProduct(int id) async {
-    final db = await _databaseService.database;
-
-    return await db.delete(
-      'products',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await _db.productsBox.delete(id);
+    return 1;
   }
 }

@@ -1,92 +1,21 @@
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class DatabaseService {
-  static Database? _db;
   static final DatabaseService instance = DatabaseService._constructor();
-
   DatabaseService._constructor();
 
-  Future<Database> get database async {
-    if (_db != null) {
-      return _db!;
-    }
+  Box? _productsBox;
+  Box? _transactionsBox;
+  Box? _transactionItemsBox;
 
-    _db = await initDatabase();
-    return _db!;
-  }
+  Box get productsBox => _productsBox!;
+  Box get transactionsBox => _transactionsBox!;
+  Box get transactionItemsBox => _transactionItemsBox!;
 
-  Future<Database> initDatabase() async {
-    final databaseDirPath = await getDatabasesPath();
-    final databasePath = join(databaseDirPath, "master_db.db");
-    final database = await openDatabase(
-      databasePath,
-      version: 2, 
-      onCreate: (db, version) async {
-        await db.execute("PRAGMA foreign_keys = ON");
-
-        await db.execute('''
-          CREATE TABLE products (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            category TEXT NOT NULL,
-            sell_price REAL NOT NULL,
-            cost_price REAL NOT NULL,
-            stock INTEGER NOT NULL DEFAULT 0,
-            min_stock INTEGER NOT NULL DEFAULT 0,
-            discount_percent REAL NOT NULL DEFAULT 0,
-            is_active INTEGER NOT NULL DEFAULT 1,
-            is_favorite INTEGER NOT NULL DEFAULT 0,
-            image_path TEXT,
-            description TEXT,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
-          )
-        ''');
-
-        await db.execute('''
-          CREATE TABLE transactions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            invoice_number TEXT UNIQUE NOT NULL,
-            subtotal REAL NOT NULL,
-            discount_amount REAL NOT NULL DEFAULT 0,
-            tax_amount REAL NOT NULL DEFAULT 0,
-            grand_total REAL NOT NULL,
-            payment_method TEXT NOT NULL,
-            amount_paid REAL NOT NULL,
-            change_amount REAL NOT NULL DEFAULT 0,
-            total_items INTEGER NOT NULL,
-            created_at TEXT NOT NULL
-          )
-        ''');
-
-        await db.execute('''
-          CREATE TABLE transaction_items (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            transaction_id INTEGER NOT NULL,
-            product_id INTEGER NOT NULL,
-            product_name TEXT NOT NULL,
-            product_price REAL NOT NULL,
-            discount_percent REAL NOT NULL DEFAULT 0,
-            quantity INTEGER NOT NULL,
-            subtotal REAL NOT NULL,
-            FOREIGN KEY (transaction_id) REFERENCES transactions (id) ON DELETE CASCADE,
-            FOREIGN KEY (product_id) REFERENCES products (id)
-          )
-        ''');
-      },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          await db.execute(
-            'ALTER TABLE products ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0',
-          );
-          await db.execute(
-            'ALTER TABLE products ADD COLUMN description TEXT',
-          );
-        }
-      },
-    );
-
-    return database;
+  Future<void> init() async {
+    await Hive.initFlutter();
+    _productsBox = await Hive.openBox('products');
+    _transactionsBox = await Hive.openBox('transactions');
+    _transactionItemsBox = await Hive.openBox('transaction_items');
   }
 }

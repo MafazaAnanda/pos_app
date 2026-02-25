@@ -1,5 +1,6 @@
 import 'dart:io';
-
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -26,7 +27,8 @@ class _ProductFormState extends State<ProductForm> {
   int _stock = 0;
   int _minStock = 0;
   double _discountPercent = 0;
-  String? _imagePath = ""; 
+  String? _imagePath = "";
+  Uint8List? _imageBytes;
   bool _isFavorite = true;
   String _description = "";
   final List<String> _categories = [
@@ -45,10 +47,40 @@ class _ProductFormState extends State<ProductForm> {
     );
 
     if (pickedFile != null) {
-      setState(() {
-        _imagePath = pickedFile.path;
-      });
+      if (kIsWeb) {
+        final bytes = await pickedFile.readAsBytes();
+        setState(() {
+          _imageBytes = bytes;
+          _imagePath = pickedFile.name;
+        });
+      } else {
+        setState(() {
+          _imagePath = pickedFile.path;
+          _imageBytes = null;
+        });
+      }
     }
+  }
+
+  Widget _buildImagePreview() {
+    if (kIsWeb && _imageBytes != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: Image.memory(_imageBytes!, fit: BoxFit.cover, width: double.infinity),
+      );
+    } else if (!kIsWeb && _imagePath != null && _imagePath!.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: Image.file(File(_imagePath!), fit: BoxFit.cover, width: double.infinity),
+      );
+    }
+    return const Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
+        Text('Tap to add product image', style: TextStyle(color: Colors.grey)),
+      ],
+    );
   }
 
   @override
@@ -87,22 +119,7 @@ class _ProductFormState extends State<ProductForm> {
                       borderRadius: BorderRadius.circular(6),
                     ),
 
-                    child: _imagePath != null && _imagePath!.isNotEmpty
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child: Image.file(
-                              File(_imagePath!),
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                        : const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
-                              Text("Tap to add product image", 
-                                   style: TextStyle(color: Colors.grey)),
-                            ],
-                          ),
+                    child: _buildImagePreview(),
                   ),
                 ),
               ),
@@ -372,7 +389,7 @@ class _ProductFormState extends State<ProductForm> {
                 ),
               ),
 
-              // prodcut is favorite input 
+              // product is favorite input 
               Padding(
                 padding: const EdgeInsets.all(8),
                 child: SwitchListTile(

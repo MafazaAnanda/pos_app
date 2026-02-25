@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pos_app/database/database_service.dart';
 import 'package:pos_app/screens/product_form.dart';
 import 'package:pos_app/screens/product_list.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await DatabaseService.instance.init();
   runApp(const MyApp());
 }
 
@@ -56,8 +59,8 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const ProductList(),
-        'menu': (context) => const ProductList(),
-        'product_form': (context) => const ProductForm(),
+        '/menu': (context) => const ProductList(),
+        '/product_form': (context) => const ProductForm(),
       },
     );
   }
