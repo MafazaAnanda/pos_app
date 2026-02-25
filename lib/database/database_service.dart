@@ -39,7 +39,9 @@ class DatabaseService {
           is_active INTEGER NOT NULL DEFAULT 1,
           image_path TEXT,
           created_at TEXT NOT NULL,
-          updated_at TEXT NOT NULL
+          updated_at TEXT NOT NULL,
+          is_favorite INTEGER NOT NULL DEFAULT 1,
+          description TEXT NOT NULL
         )
         ''');
 

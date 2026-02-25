@@ -20,21 +20,13 @@ class AppDrawer extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  'POS App',
+                  'Restaurant POS',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
-                Text(
-                  'POS',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                  ),
-                )
               ],
             ),
           ),
@@ -49,15 +41,15 @@ class AppDrawer extends StatelessWidget {
 
           ListTile(
             leading: const Icon(Icons.inventory),
-            title: const Text('Product'),
+            title: const Text('Menu'),
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/products');
+              Navigator.pushReplacementNamed(context, '/menu');
             },
           ),
 
           ListTile(
             leading: const Icon(Icons.add_shopping_cart),
-            title: const Text('Checkout'),
+            title: const Text('Cashier'),
             onTap: () {
               Navigator.pushReplacementNamed(context, '/checkout');
             },

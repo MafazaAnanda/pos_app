@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pos_app/screens/product_form.dart';
 import 'package:pos_app/screens/product_list.dart';
 
 void main() {
@@ -12,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'POS',
+      title: 'Restaurant POS',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -55,7 +56,8 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const ProductList(),
-        'products': (context) => const ProductList(),
+        'menu': (context) => const ProductList(),
+        'product_form': (context) => const ProductForm(),
       },
     );
   }

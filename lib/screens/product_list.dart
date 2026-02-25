@@ -32,7 +32,7 @@ class _ProductListState extends State<ProductList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Product List'),
+        title: const Text('Menu'),
       ),
 
       drawer: const AppDrawer(),
@@ -42,12 +42,12 @@ class _ProductListState extends State<ProductList> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.inventory_2_outlined),
-                Text('No Product Yet!')
+                Text('No Menu Yet!')
               ],
             ),
           )
           : ListView.builder(
-            itemCount :_products.length,
+            itemCount: _products.length,
             itemBuilder: (context, index) {
               final product = _products[index];
               return Card(
@@ -55,10 +55,27 @@ class _ProductListState extends State<ProductList> {
                   horizontal: 14,
                   vertical: 7,
                 ),
-
                 child: ListTile(
+                  leading: product.isFavorite == 1
+                      ? const Icon(Icons.favorite, color: Colors.red)
+                      : const Icon(Icons.favorite_border),
                   title: Text(product.name),
-                  subtitle: Text(product.category),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(product.category),
+                      if (product.description.isNotEmpty)
+                        Text(
+                          product.description,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
+                  ),
                   trailing: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -69,13 +86,10 @@ class _ProductListState extends State<ProductList> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      
                       Text(
-                        'Stock: ${product.stock}',
+                        product.stock > 0 ? 'Available' : 'Not Available',
                         style: TextStyle(
-                          color: product.stock <= product.minStock
-                                ? Colors.red
-                                : Colors.green,
+                          color: product.stock > 0 ? Colors.green : Colors.red,
                         ),
                       ),
                     ],
@@ -87,9 +101,10 @@ class _ProductListState extends State<ProductList> {
 
           floatingActionButton: FloatingActionButton(
             onPressed: () {
-
+              Navigator.pushNamed(context, 'product_form').then((_) {
+                _loadProducts();
+              });
             },
-
             child: const Icon(Icons.add),
           ),
     );

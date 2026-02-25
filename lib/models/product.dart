@@ -2,7 +2,8 @@ class Product {
   final int? id;
   final String name, category;
   final double sellPrice, costPrice, discountPercent;
-  final int stock, minStock, isActive;
+  final int stock, minStock, isActive, isFavorite;
+  final String description;
   final String? imagePath, createdAt, updatedAt;
 
   Product({
@@ -15,6 +16,8 @@ class Product {
     this.minStock = 0,
     this.discountPercent = 0,
     this.isActive = 1,
+    this.isFavorite = 1,
+    this.description = '',
     this.imagePath,
     this.createdAt,
     this.updatedAt,
@@ -31,12 +34,14 @@ class Product {
       minStock: map['min_stock'] as int,
       discountPercent: (map['discount_percent'] as num).toDouble(),
       isActive: map['is_active'] as int,
+      isFavorite: map['is_favorite'] as int,
+      description: map['description'] as String,
       imagePath: map['image_path'] as String?,
       createdAt: map['created_at'] as String?,
       updatedAt: map['updated_at'] as String?,
     );
   }
-  
+
   Map<String, dynamic> toMap() {
     return {
       if (id != null) 'id': id,
@@ -48,6 +53,8 @@ class Product {
       'min_stock': minStock,
       'discount_percent': discountPercent,
       'is_active': isActive,
+      'is_favorite': isFavorite,
+      'description': description,
       'image_path': imagePath,
       'created_at': createdAt,
       'updated_at': updatedAt,
@@ -64,6 +71,8 @@ class Product {
     int? minStock,
     double? discountPercent,
     int? isActive,
+    int? isFavorite,
+    String? description,
     String? imagePath,
     String? createdAt,
     String? updatedAt,
@@ -78,6 +87,8 @@ class Product {
       minStock: minStock ?? this.minStock,
       discountPercent: discountPercent ?? this.discountPercent,
       isActive: isActive ?? this.isActive,
+      isFavorite: isFavorite ?? this.isFavorite,
+      description: description ?? this.description,
       imagePath: imagePath ?? this.imagePath,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
