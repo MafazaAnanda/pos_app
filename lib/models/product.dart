@@ -1,9 +1,8 @@
 class Product {
   final int? id;
-  final String name, category;
+  final String name, category, description;
   final double sellPrice, costPrice, discountPercent;
   final int stock, minStock, isActive, isFavorite;
-  final String description;
   final String? imagePath, createdAt, updatedAt;
 
   Product({

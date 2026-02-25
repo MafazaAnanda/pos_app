@@ -21,31 +21,29 @@ class DatabaseService {
     final databasePath = join(databaseDirPath, "master_db.db");
     final database = await openDatabase(
       databasePath,
-      version: 1,
+      version: 2, 
       onCreate: (db, version) async {
-        await db.execute("PRAGMA foreign_key = ON");
+        await db.execute("PRAGMA foreign_keys = ON");
 
-        // products table
         await db.execute('''
-        CREATE TABLE products (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          category TEXT NOT NULL,
-          sell_price REAL NOT NULL,
-          cost_price REAL NOT NULL,
-          stock INTEGER NOT NULL DEFAULT 0,
-          min_stock INTEGER NOT NULL DEFAULT 0,
-          discount_percent REAL NOT NULL DEFAULT 0,
-          is_active INTEGER NOT NULL DEFAULT 1,
-          image_path TEXT,
-          created_at TEXT NOT NULL,
-          updated_at TEXT NOT NULL,
-          is_favorite INTEGER NOT NULL DEFAULT 1,
-          description TEXT NOT NULL
-        )
+          CREATE TABLE products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            category TEXT NOT NULL,
+            sell_price REAL NOT NULL,
+            cost_price REAL NOT NULL,
+            stock INTEGER NOT NULL DEFAULT 0,
+            min_stock INTEGER NOT NULL DEFAULT 0,
+            discount_percent REAL NOT NULL DEFAULT 0,
+            is_active INTEGER NOT NULL DEFAULT 1,
+            is_favorite INTEGER NOT NULL DEFAULT 0,
+            image_path TEXT,
+            description TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+          )
         ''');
 
-        // transaction table
         await db.execute('''
           CREATE TABLE transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -62,7 +60,6 @@ class DatabaseService {
           )
         ''');
 
-        // transaction items table
         await db.execute('''
           CREATE TABLE transaction_items (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -77,7 +74,17 @@ class DatabaseService {
             FOREIGN KEY (product_id) REFERENCES products (id)
           )
         ''');
-      }
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+            'ALTER TABLE products ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0',
+          );
+          await db.execute(
+            'ALTER TABLE products ADD COLUMN description TEXT',
+          );
+        }
+      },
     );
 
     return database;
